@@ -1,0 +1,75 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User profile data stored at /users/{userId}",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "lastLogin": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "TaskList": {
+      "title": "Task List",
+      "description": "Collaborative task list stored at /taskLists/{listId}",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "ownerEmail": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "memberEmails": { "type": "array" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["name", "ownerId", "ownerEmail", "memberEmails", "createdAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Individual task item stored in user tasks or list tasks",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "listId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdByEmail": { "type": "string" },
+        "createdByName": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "category": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["title", "completed", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "User isolated tasks collection"
+    },
+    "/taskLists/{listId}": {
+      "schema": "TaskList",
+      "description": "Shared collaborative task lists collection"
+    },
+    "/taskLists/{listId}/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Tasks within a collaborative task list"
+    }
+  }
+}

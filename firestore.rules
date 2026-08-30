@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function for list membership check
+    function isListMember(listId) {
+      let listDoc = get(/databases/$(database)/documents/taskLists/$(listId));
+      return request.auth != null && (
+        listDoc.data.ownerId == request.auth.uid ||
+        (request.auth.token.email != null && (
+          listDoc.data.ownerEmail == request.auth.token.email ||
+          listDoc.data.ownerEmail == request.auth.token.email.lower() ||
+          listDoc.data.memberEmails.hasAny([request.auth.token.email, request.auth.token.email.lower()])
+        ))
+      );
+    }
+
+    // User profile and isolated legacy tasks
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /tasks/{taskId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Collaborative Task Lists
+    match /taskLists/{listId} {
+      // List owner or any invited member can read the list metadata
+      allow get, list: if request.auth != null && (
+        resource.data.ownerId == request.auth.uid ||
+        (request.auth.token.email != null && (
+          resource.data.ownerEmail == request.auth.token.email ||
+          resource.data.ownerEmail == request.auth.token.email.lower() ||
+          resource.data.memberEmails.hasAny([request.auth.token.email, request.auth.token.email.lower()])
+        ))
+      );
+
+      // Authenticated users can create new task lists where they are the owner
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+
+      // Owners or members can update list metadata / invite collaborators
+      allow update: if request.auth != null && (
+        resource.data.ownerId == request.auth.uid ||
+        (request.auth.token.email != null && (
+          resource.data.ownerEmail == request.auth.token.email ||
+          resource.data.ownerEmail == request.auth.token.email.lower() ||
+          resource.data.memberEmails.hasAny([request.auth.token.email, request.auth.token.email.lower()])
+        ))
+      );
+
+      // Only the list owner can delete the list
+      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+
+      // Subcollection for tasks in this collaborative list
+      match /tasks/{taskId} {
+        allow read, write: if isListMember(listId);
+      }
+    }
+  }
+}
+

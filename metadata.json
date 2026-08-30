@@ -1,0 +1,6 @@
+{
+  "name": "Collaborative Todo List",
+  "description": "A collaborative to-do list app with Google Sign-In and secure Firebase Firestore database isolation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
