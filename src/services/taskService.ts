@@ -141,22 +141,23 @@ export const subscribeToUserTaskLists = (
       try {
         const defaultListId = `default_${userId}`;
         const defaultDocRef = doc(db, 'taskLists', defaultListId);
-        const defaultDoc = await getDoc(defaultDocRef);
-        if (!defaultDoc.exists()) {
-          const now = Date.now();
-          await setDoc(defaultDocRef, {
+        const now = Date.now();
+        await setDoc(
+          defaultDocRef,
+          {
             name: 'Personal Tasks',
             description: 'Default personal task list',
             ownerId: userId,
-            ownerEmail: normalizedEmail || '',
-            ownerName: 'You',
+            ownerEmail: normalizedEmail || (auth.currentUser?.email || '').toLowerCase().trim(),
+            ownerName: auth.currentUser?.displayName || 'You',
             memberEmails: normalizedEmail ? [normalizedEmail] : [],
             isDefault: true,
             createdAt: now,
             updatedAt: now,
-          });
-          return;
-        }
+          },
+          { merge: true }
+        );
+        return;
       } catch (createErr) {
         console.warn('Could not auto-create default list:', createErr);
       }
