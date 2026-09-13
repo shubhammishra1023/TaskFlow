@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, CheckSquare, RefreshCw, AlertCircle, Loader2, Lock } from 'lucide-react';
+import { ShieldCheck, RefreshCw, AlertCircle, Loader2, Lock, Sparkles, HeartHandshake } from 'lucide-react';
+import { APP_LOGO_SRC, APP_NAME } from '../assets/logo';
 
 export const AuthScreen: React.FC = () => {
   const { signIn, authError, clearError } = useAuth();
@@ -20,16 +21,22 @@ export const AuthScreen: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-lg p-6 sm:p-8 text-center">
-        {/* App Icon */}
-        <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 text-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-          <CheckSquare className="w-6 h-6" />
+        {/* App Logo */}
+        <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-md mx-auto mb-4 border border-indigo-200/60 dark:border-indigo-900/60 bg-slate-900 flex items-center justify-center">
+          <img
+            src={APP_LOGO_SRC}
+            alt="Taskflow Done Logo"
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
         </div>
 
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
-          Sign In to Todo
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight mb-2 flex items-center justify-center gap-1.5">
+          <span>Taskflow</span>
+          <span className="text-indigo-600 dark:text-indigo-400">Done</span>
         </h2>
         <p className="text-xs text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-          Sign in with your Google account to access your personal task list. Tasks are securely stored in your isolated Firebase Firestore record.
+          Transform your productivity with daily mindful reflections, collaborative task tracking, and inspiring constructive feedback.
         </p>
 
         {authError && (

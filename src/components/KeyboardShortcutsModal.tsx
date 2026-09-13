@@ -55,6 +55,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
   {
     title: 'Search & Global Controls',
     shortcuts: [
+      { keys: ['M'], description: 'Open Daily Mind & Emotion Journal (Reflect & Get Feedback)', badge: 'Mindset' },
       { keys: ['F', 'or', '/'], description: 'Focus search & filter input' },
       { keys: ['?'], description: 'Toggle this keyboard shortcuts guide' },
     ],

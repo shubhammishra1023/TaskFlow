@@ -60,3 +60,35 @@ export interface KeyboardShortcutItem {
   category: 'Navigation' | 'Actions' | 'List & Collaboration' | 'General';
 }
 
+export type MoodType = 'energized' | 'happy' | 'peaceful' | 'neutral' | 'tired' | 'stressed' | 'overwhelmed';
+
+export interface DailyNoteFeedback {
+  detectedEmotion: string;
+  productivityRating: 'High Momentum' | 'Steady Progress' | 'Maintenance / Recovery' | 'Blocked / Needs Reset';
+  howToDoBetter: string; // Specific advice on how to do better
+  improveThinking: string; // Guidance to improve the user's way of thinking & cognitive reframing
+  suggestedAction: string; // Gentle next step / micro action
+  perspective?: string;
+  encouragement?: string;
+}
+
+export interface DailyNote {
+  id: string;
+  userId: string;
+  date: string; // YYYY-MM-DD
+  noteText: string; // Single box containing the user's real, humble thoughts & reflections
+  detectedEmotion: string;
+  productivityScore: number; // 0-100 measured directly from the note
+  positivityScore: number; // 0-100 mindset positivity score
+  sentimentType: 'positive' | 'neutral' | 'needs_encouragement';
+  feedback?: DailyNoteFeedback;
+  // Backward compatibility fields
+  feeling?: MoodType;
+  emotionSummary?: string;
+  achievements?: string;
+  reflections?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+

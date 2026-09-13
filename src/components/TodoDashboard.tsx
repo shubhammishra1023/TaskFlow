@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Task, TaskList, TaskFiltersState, Priority } from '../types';
+import { Task, TaskList, TaskFiltersState, Priority, DailyNote } from '../types';
 import {
   subscribeToUserTaskLists,
   subscribeToListTasks,
@@ -11,11 +11,13 @@ import {
   deleteMultipleTasksFromList,
   reorderTasksInList,
 } from '../services/taskService';
+import { subscribeToUserDailyNotes } from '../services/dailyNotesService';
 import { checkAndNotifyDueTasks } from '../utils/notifications';
 import { TaskListManager } from './TaskListManager';
 import { ShareListModal } from './ShareListModal';
 import { CreateListModal } from './CreateListModal';
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal';
+import { DailyNoteModal } from './DailyNoteModal';
 import { TaskInput } from './TaskInput';
 import { TaskFilters } from './TaskFilters';
 import { TaskSummaryChart } from './TaskSummaryChart';
@@ -36,6 +38,11 @@ import {
   Sparkles,
   BarChart3,
   PieChart as PieChartIcon,
+  HeartHandshake,
+  BookOpen,
+  Lightbulb,
+  Brain,
+  Zap,
 } from 'lucide-react';
 
 export const TodoDashboard: React.FC = () => {
@@ -59,6 +66,10 @@ export const TodoDashboard: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCreateListModalOpen, setIsCreateListModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isDailyNoteModalOpen, setIsDailyNoteModalOpen] = useState(false);
+
+  // Daily Mind & Emotion Notes State
+  const [dailyNotes, setDailyNotes] = useState<DailyNote[]>([]);
 
   // Power User Keyboard Selection State
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -105,6 +116,44 @@ export const TodoDashboard: React.FC = () => {
 
     return () => unsubscribe();
   }, [user]);
+
+  // 1b. Subscribe to Daily Mind & Emotion Reflection Notes
+  useEffect(() => {
+    if (!user) {
+      setDailyNotes([]);
+      return;
+    }
+
+    const unsubscribeNotes = subscribeToUserDailyNotes(
+      user.uid,
+      (fetchedNotes) => {
+        setDailyNotes(fetchedNotes);
+      },
+      (err) => {
+        console.error('Error synchronizing daily notes:', err);
+      }
+    );
+
+    return () => unsubscribeNotes();
+  }, [user]);
+
+  // Global listener for navbar / shortcuts trigger
+  useEffect(() => {
+    const handleToggleDailyNote = () => setIsDailyNoteModalOpen((prev) => !prev);
+    window.addEventListener('toggle-daily-note', handleToggleDailyNote);
+    return () => window.removeEventListener('toggle-daily-note', handleToggleDailyNote);
+  }, []);
+
+  // Today's date and note memo
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }, []);
+
+  const todayNote = useMemo(() => dailyNotes.find((n) => n.date === todayStr), [dailyNotes, todayStr]);
 
   // 2. Subscribe to Tasks of Currently Selected List
   useEffect(() => {
@@ -630,13 +679,80 @@ export const TodoDashboard: React.FC = () => {
         </div>
 
         {analyticsTab === 'productivity' ? (
-          <DailyProductivityChart tasks={tasks} />
+          <DailyProductivityChart
+            tasks={tasks}
+            dailyNotes={dailyNotes}
+            onOpenDailyNoteModal={() => setIsDailyNoteModalOpen(true)}
+          />
         ) : (
           <TaskSummaryChart
             tasks={tasks}
             onClearCompleted={counts.completed > 0 ? handleClearCompleted : undefined}
           />
         )}
+      </div>
+
+      {/* Daily Thoughts & Mindset Reflection Card (Single Humble Note Box) */}
+      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-purple-50/50 to-pink-50/40 dark:from-indigo-950/30 dark:via-purple-950/20 dark:to-slate-900 border border-indigo-100/90 dark:border-indigo-900/50 shadow-2xs transition-all">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-xs shrink-0 mt-0.5">
+              <Brain className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Daily Thoughts & Mindset Reflection
+                </h3>
+                {todayNote ? (
+                  <>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+                      <HeartHandshake className="w-3 h-3" />
+                      {todayNote.detectedEmotion || 'Reflective & Honest'}
+                    </span>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      Productivity: {todayNote.productivityScore ?? todayNote.positivityScore}%
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    Pending Today's Note
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-xl leading-relaxed">
+                {todayNote
+                  ? todayNote.feedback?.improveThinking
+                    ? `Mindset Shift: "${todayNote.feedback.improveThinking}"`
+                    : todayNote.feedback?.howToDoBetter
+                    ? `Growth Tip: "${todayNote.feedback.howToDoBetter}"`
+                    : todayNote.noteText?.slice(0, 110) || 'Your reflection is securely saved for today.'
+                  : `Type your raw and humble thoughts in one simple box—no multiple questions. We'll analyze your emotional state, evaluate your daily productivity, and share personalized advice on how to improve your way of thinking.`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <button
+              type="button"
+              onClick={() => setIsDailyNoteModalOpen(true)}
+              className="px-3.5 py-2 text-xs font-semibold rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
+            >
+              {todayNote ? (
+                <>
+                  <BookOpen className="w-4 h-4" />
+                  <span>View / Edit Note</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>Write Thoughts (M)</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Focus Timer with Prescribed & Custom Presets & Distraction-Free Fullscreen */}
@@ -802,6 +918,17 @@ export const TodoDashboard: React.FC = () => {
         isOpen={isShortcutsModalOpen}
         onClose={() => setIsShortcutsModalOpen(false)}
       />
+
+      {/* Daily Mind & Emotion Journal Modal */}
+      {user && (
+        <DailyNoteModal
+          isOpen={isDailyNoteModalOpen}
+          onClose={() => setIsDailyNoteModalOpen(false)}
+          userId={user.uid}
+          existingNotes={dailyNotes}
+          onNoteSaved={() => {}}
+        />
+      )}
     </div>
   );
 };

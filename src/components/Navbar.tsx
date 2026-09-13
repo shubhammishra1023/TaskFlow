@@ -4,7 +4,6 @@ import { useTheme } from '../context/ThemeContext';
 import {
   ShieldCheck,
   LogOut,
-  CheckSquare,
   User as UserIcon,
   Sun,
   Moon,
@@ -12,18 +11,21 @@ import {
   BellOff,
   BellRing,
   Keyboard,
+  HeartHandshake,
 } from 'lucide-react';
 import {
   getNotificationPermission,
   requestNotificationPermission,
   NotificationPermissionState,
 } from '../utils/notifications';
+import { APP_LOGO_SRC, APP_NAME } from '../assets/logo';
 
 interface NavbarProps {
   onOpenShortcutsModal?: () => void;
+  onOpenDailyNoteModal?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenShortcutsModal }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenShortcutsModal, onOpenDailyNoteModal }) => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [notificationState, setNotificationState] = useState<NotificationPermissionState>('default');
@@ -45,22 +47,36 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenShortcutsModal }) => {
     }
   };
 
+  const handleOpenDailyNote = () => {
+    if (onOpenDailyNoteModal) {
+      onOpenDailyNoteModal();
+    } else {
+      window.dispatchEvent(new CustomEvent('toggle-daily-note'));
+    }
+  };
+
   return (
     <header className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shadow-xs transition-colors duration-200">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* App Branding */}
+        {/* App Branding with Cool Generated Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-600 dark:bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-xs">
-            <CheckSquare className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl overflow-hidden shadow-xs border border-indigo-200/60 dark:border-indigo-900/60 bg-slate-900 flex items-center justify-center shrink-0">
+            <img
+              src={APP_LOGO_SRC}
+              alt="Taskflow Done Logo"
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-                Todo
+              <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                <span>Taskflow</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">Done</span>
               </h1>
               <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 px-2 py-0.5 rounded-full">
                 <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                Collaborative Firestore
+                Mindset & Tasks
               </span>
             </div>
           </div>
@@ -68,6 +84,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenShortcutsModal }) => {
 
         {/* Action Controls & User Info */}
         <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Daily Mindful Note Quick Trigger */}
+          {user && (
+            <button
+              id="daily-note-nav-btn"
+              type="button"
+              onClick={handleOpenDailyNote}
+              title="Daily Mind & Emotion Note (Reflect & Get Feedback)"
+              className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold shadow-2xs"
+            >
+              <HeartHandshake className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span className="hidden sm:inline">Daily Note</span>
+            </button>
+          )}
+
           {/* Keyboard Shortcuts Trigger */}
           {user && (
             <button

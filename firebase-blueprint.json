@@ -52,6 +52,25 @@
         "updatedAt": { "type": "number" }
       },
       "required": ["title", "completed", "createdAt"]
+    },
+    "DailyNote": {
+      "title": "Daily Note",
+      "description": "Daily short notes on feelings, achievements, mind/emotions, positivity score, and feedback",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "feeling": { "type": "string" },
+        "emotionSummary": { "type": "string" },
+        "achievements": { "type": "string" },
+        "reflections": { "type": "string" },
+        "positivityScore": { "type": "number" },
+        "sentimentType": { "type": "string", "enum": ["positive", "neutral", "needs_encouragement"] },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "date", "feeling", "positivityScore", "createdAt"]
     }
   },
   "firestore": {
@@ -62,6 +81,10 @@
     "/users/{userId}/tasks/{taskId}": {
       "schema": "Task",
       "description": "User isolated tasks collection"
+    },
+    "/users/{userId}/dailyNotes/{noteId}": {
+      "schema": "DailyNote",
+      "description": "User daily emotional and achievement reflection notes"
     },
     "/taskLists/{listId}": {
       "schema": "TaskList",

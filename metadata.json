@@ -1,6 +1,6 @@
 {
-  "name": "Collaborative Todo List",
-  "description": "A collaborative to-do list app with Google Sign-In and secure Firebase Firestore database isolation.",
+  "name": "Taskflow Done",
+  "description": "A collaborative task and mood-reflection workflow application with Google Sign-In, daily mindful journal notes, positivity progress charts, and inspirational feedback.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
